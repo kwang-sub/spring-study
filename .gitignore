@@ -1,5 +1,16 @@
-# Created by https://www.toptal.com/developers/gitignore/api/windows,java,eclipse
-# Edit at https://www.toptal.com/developers/gitignore?templates=windows,java,eclipse
+Servers/
+
+
+### Java ###
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+
+# Created by https://www.toptal.com/developers/gitignore/api/eclipse,intellij
+# Edit at https://www.toptal.com/developers/gitignore?templates=eclipse,intellij
 
 ### Eclipse ###
 .metadata
@@ -67,6 +78,7 @@ local.properties
 # Spring Boot Tooling
 .sts4-cache/
 
+
 ### Java ###
 # Compiled class file
 *.class
@@ -123,3 +135,4 @@ $RECYCLE.BIN/
 *.project
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,java,eclipse
+
