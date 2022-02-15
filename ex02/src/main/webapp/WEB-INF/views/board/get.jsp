@@ -33,7 +33,11 @@
 				<button data-oper='modify' class="btn btn-default">Modify</button>					
 				<button data-oper='list' class="btn btn-default">list</button>
 				<form action="/board/modify" id="operForm" method="get">
-					<input type="hidden" id="bno" name="bno" value="${board.bno }">
+					<input type="hidden" id="bno" name="bno" value="${board.bno}">
+					<input type="hidden" id="pageNum" name="pageNum" value="${cri.pageNum}">
+					<input type="hidden" id="amount" name="amount" value="${cri.amount}">
+					<input type="hidden" name="keyword" value="${cri.keyword }">
+					<input type="hidden" name="type" value="${cri.type}">
 				</form>
 			</div>
 		</div>
