@@ -26,7 +26,7 @@ public class ReplyMapperTests {
 	@Autowired
 	private ReplyMapper mapper;
 	
-	private Long[] bnoArr = {4456507L,4456506L,4456505L,4456504L,4456503L};
+	private Long[] bnoArr = {2097176L,2097175L,2097174L,2097173L,2097172L};
 	
 	/**맵퍼 존재 여부 확인
 	 * 

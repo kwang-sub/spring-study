@@ -31,17 +31,15 @@
 				</div>
 				<button data-oper='modify' class="btn btn-default" >Modify</button>
 				<button data-oper='list' class="btn btn-info" >List</button>
+				
 				<form action="/board/modify" method="get" id="operForm">
 					<input type="hidden" value="${board.bno }" id="bno" name="bno">
 					<input type="hidden" value="${cri.pageNum}" id="bno" name="pageNum">
 					<input type="hidden" value="${cri.amount }" id="bno" name="amount">
 					<input type="hidden" value="${cri.type }" name="type">
 					<input type="hidden" value="${cri.keyword }" name="keyword">
-					
-					
 				</form>
 			</div>
-			
 		</div>
 	</div>
 </div>
@@ -117,85 +115,123 @@
 <script type="text/javascript" src="/resources/js/reply.js"></script>
 
 <script type="text/javascript">
-/* 게시글에서 댓글관련 이벤트 처리하기 위한 스크립트 */
+
+/* 댓글관련 이벤트 replyService 모듈화 테스트 스크립트 */
+/* 	$(document).ready(function(){
+		console.log("===============");
+		
+		var bnoValue = '${board.bno}';
+		
+		replyService.add({reply:"test", replyer:"tester", bno:bnoValue},
+				function(result){
+					alert("result : " + result);	
+				}
+		)  
+		
+ 	   replyService.getList({bno:bnoValue, page:1}, function(list){
+			for(var i = 0; i < list.list.length; i++){
+				console.log(list.list[i]);
+			}
+		});
+		
+		replyService.remove(5, function(count){
+			console.log(count);
+			if(count === "success"){
+				alert("REMOVED");
+			}
+			
+			},function(){
+				alert('ERROR.......');	
+		}) 
+ 		replyService.update({rno:10,bno:bnoValue,reply:"modified"},
+				function(result){
+					alert("수정완료");
+		}); 
+ 		replyService.get(10, function(data){
+			console.log(data);
+		}) 
+	}) */ 
+	
+	/* 댓글 관련 이벤트 처리 */
 	$(document).ready(function(){
 		var bnoValue = '${board.bno}';
 		var replyUL = $(".chat");
-		
 		showList(1);
-		var pageNum = 1;
-		var replyPageFooter = $(".panel-footer");
+		
+		/* 댓글 목록 조회 */
+		function showList(page){
+			console.log("page " + page);
+			replyService.getList({bno:bnoValue,page:page||1},function(replyCnt,list){
+				
+				if(page == -1){
+					pageNum =Math.ceil(replyCnt/10.0);
+					showList(pageNum);
+					return;
+				}
+				var str="";
+				if(list == null || list.length ==0){
+					replyUL.html("");
+					return;
+				}
+				for(var i = 0, len = list.length||0; i<len; i++){
+					str += "<li class='left clearfix' data-rno='"+list[i].rno+"'>";
+					str += "<div><div class='header'><strong class='primary-font'>"+list[i].replyer+"</strong>";
+					str += "<small class='pull-right text-muted'>"+replyService.displayTime(list[i].replyDate)+"</small></div>";
+					str += "<p>" +list[i].reply+"</p></div></li>";
+				}
+				replyUL.html(str);
+				showReplyPage(replyCnt);
+			});
+		}
 		
 		/* 댓글 페이징 */
+		
+		var pageNum = 1;
+		var replyPageFooter = $(".panel-footer");
 		function showReplyPage(replyCnt){
-			var endNum = Math.ceil(pageNum/10.0) * 10;
+			
+			var endNum = Math.ceil(pageNum / 10.0) * 10;
 			var startNum = endNum - 9;
 			
 			var prev = startNum != 1;
-			var next =  false;
-			 
-			if( endNum * 10 >= replyCnt){
-				endNum =Math.ceil(replyCnt/10.0);
+			var next = false;
+			if(endNum * 10 >= replyCnt){
+				endNum = Math.ceil(replyCnt/10.0);
 			}
 			if(endNum * 10 < replyCnt){
 				next = true;
 			}
 			var str = "<ul class='pagination pull-right'>";
+			
 			if(prev){
-				str += "<li class = 'page-item'><a class='page-link' href='"+(startNum-1)+"'>Previous</a></li>";
-			}			
+				str += "<li class='page-item'><a class='page-link' href='"+(startNum - 1)+"'>Previous</a></li>";
+			}
 			
 			for(var i = startNum; i <= endNum; i++){
 				var active = pageNum == i ? "active" : "";
-				str += "<li class ='page-item " + active + "'><a class = 'page-link' href = '" + i + "'>" + i + "</a></li>";
-				}
-			if( next){
-				str += "<li class = 'page-item'><a class = 'page-link' href = '"+(endNum + 1)+"'>Next</a></li>";
+				str += "<li class='page-itme "+active+"'><a class='page-link' href='"+i+"'>"+i+"</a></li>";
 			}
-				str += "</ul></div>";
-				console.log("testts"+str);
-				replyPageFooter.html(str);
+			if(next){
+				str += "<li class='page-item'><a class='page-link' href='"+(endNum + 1)+"'>Next</a></li>";
+			}
+			str += "</ul></div>";
+			console.log(str);
+			replyPageFooter.html(str);
+			
 		}
-		/*댓글 페이징 클릭이벤트 처리 */
+		
+		/* 댓글 페이징 번호 클릭 이벤트 */
 		replyPageFooter.on("click", "li a", function(e){
 			e.preventDefault();
-			console.log( "page click");
+			console.log("page click");
 			
-			var tagetPageNum = $(this).attr("href");
-			pageNum = tagetPageNum;
+			var targetPageNum = $(this).attr("href");
+			console.log("targetPageNum : " + targetPageNum);
+			pageNum = targetPageNum;
 			showList(pageNum);
 		})
-		
-		
-		
-		/*댓글목록  */
-		function showList(page){
 			
-			replyService.getList({bno:bnoValue,page : page|| 1}, function(replyCnt,list){
-				if(page == -1){
-					pageNum = Math.ceil(replyCnt/10.0);
-					showList(pageNum);
-					return;
-				}
-				
-				
-				var str = "";
-				if(list == null || list.length == 0){
-					replyUL.html("");
-					return;
-				}
-				for(var i =0, len = list.length || 0; i<len; i++){
-					str += "<li class = 'left clearfix' data-rno='"+list[i].rno+"'>";
-					str += "<div><div class = 'header'><strong class='primary-font'>" +list[i].replyer+"</strong>";
-					str += "<small class = 'pull-right text=muted'>"+replyService.displayTime(list[i].replyDate)+"</small></div>";
-					str +="<p>"+list[i].reply+"</p></div></li>";
-					replyUL.html(str);
-					showReplyPage(replyCnt);
-				}
-			})
-		}
 		
-		/* 모달관련 이벤트  */
 		var modal = $(".modal");
 		var modalInputReply = modal.find("input[name='reply']");
 		var modalInputReplyer = modal.find("input[name='replyer']");
@@ -204,117 +240,72 @@
 		var modalModBtn = $("#modalModBtn");
 		var modalRemoveBtn = $("#modalRemoveBtn");
 		var modalRegisterBtn = $("#modalRegisterBtn");
-		
-		/* 댓글 추가 버튼 클릭시 이벤트 */
+		/* 댓글 추가 버튼클릭시 모달창 활성화 이벤트*/
 		$("#addReplyBtn").on("click",function(e){
-			modalInputReplyer.val();
 			modal.find("input").val("");
 			modalInputReplyDate.closest("div").hide();
 			modal.find("button[id != 'modalCloseBtn']").hide();
-			
 			modalRegisterBtn.show();
-			
 			$(".modal").modal("show");
 		})
+		/* 댓글클릭시 이벤트 */
+		$(".chat").on("click", "li", function(e){
+			var rno = $(this).data("rno");
+			replyService.get(rno, function(reply){
+				modalInputReply.val(reply.reply);
+				modalInputReplyer.val(reply.replyer);
+				modalInputReplyDate.val(replyService.displayTime(reply.replyDate)).attr("readonly", "readonly");
+				modal.data("rno", reply.rno);
+				
+				modal.find("button[id !='modalCloseBtn']").hide();
+				modalModBtn.show();
+				modalRemoveBtn.show();
+				$(".modal").modal("show");
+			})
+		})
 		
-		/*  모달창내의 작성 버튼 클릭시 이벤트 */
+		/* 모달창내 이벤트 */
+		
+		/* 댓글 작성 */
 		modalRegisterBtn.on("click", function(e){
-			
 			var reply = {
 					reply : modalInputReply.val(),
-					replyer: modalInputReplyer.val(),
+					replyer : modalInputReplyer.val(),
 					bno : bnoValue
 			};
 			replyService.add(reply, function(result){
 				alert(result);
-				modal.find("input").val("");
+				modal.find("input").val();
 				modal.modal("hide");
 				showList(-1);
 			})
 		})
-		/* 특정 댓글 클릭시 이벤트 */
-		$(".chat").on("click", "li", function(e){
-			var rno = $(this).data("rno");
-			replyService.get(rno, function(reply){
-				
-				modalInputReply.val(reply.reply);
-				modalInputReplyer.val(reply.replyer).attr("readonly", "readonly");
-				modalInputReplyDate.val(replyService.displayTime(reply.replyDate)).attr("readonly", "readonly");
-				modal.data("rno", reply.rno);
-				
-				modal.find("button[id != 'modalCloseBtn']").hide();
-				modalModBtn.show();
-				modalRemoveBtn.show();
-				
-				$(".modal").modal("show");
-			})
-		})
-		/* 댓글 수정버튼 */
+		
+		/* 댓글 수정 */
 		modalModBtn.on("click", function(e){
-			var reply = {rno: modal.data("rno"), reply: modalInputReply.val()};
-			
+			var reply = {rno:modal.data("rno"),reply:modalInputReply.val()};
 			replyService.update(reply, function(result){
 				alert(result);
 				modal.modal("hide");
 				showList(pageNum);
 			})
 		})
+		
 		/* 댓글 삭제 */
 		modalRemoveBtn.on("click", function(e){
 			var rno = modal.data("rno");
-			replyService.remove(rno, function(result){
+			replyService.remove(rno,function(result){
 				alert(result);
 				modal.modal("hide");
 				showList(pageNum);
 			})
-			
 		})
+		
 	})
 
 
-
+/* 페이지 이동 버튼 처리 스크립트 */
 	$(document).ready(function () {
-		console.log("============")
-		console.log("JS TEST");
-		
-		var bnoValue = '${board.bno}';
-		
-		/* 댓글목록조회 */
-		replyService.getList({bno:bnoValue, page:1}, function(list){
-			for(var i = 0, len = list.length||0; i<len; i++){
-				console.log(list[i]);
-			}
-		})
-		
-		/*댓글 추가  */
-/* 		replyService.add({reply:"JS Test", replyer:"tester", bno:bnoValue}, function(result){
-			alert("result : " + result);
-		}) */
-		/* 댓글 삭제 45번 */
-/* 		replyService.remove(35, function(count){
-			
-			console.log(count);
-			if(count === "success"){
-				alert("REMOVED");
-			}
-		}, function(err){
-			alert("ERROR......");
-		});
-		 */
-/* 		replyService.update({
-			rno : 5,
-			bno : bnoValue,
-			reply : "수정~~"
-		},function(result){
-			alert("수정 완료....");
-		}); */
-		
-		replyService.get(5, function(data){
-			
-			console.log(data);
-		});
-	
-		
 		var operForm = $("#operForm");
 		
 		$("button[data-oper='modify']").on("click",function(e){
@@ -326,8 +317,6 @@
 			operForm.find("#bno").remove();
 			operForm.attr("action","/board/list").submit();
 		})
-		
-		
 	})
 	
 	
